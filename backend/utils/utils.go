@@ -4,6 +4,7 @@ import (
 	"bar/database"
 	"bar/models"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -19,7 +20,7 @@ func GetUserId(c echo.Context) uint {
 
 	// Obtener el token de autorización del encabezado de la solicitud
 	reqToken := c.Request().Header.Get("Authorization")
-	
+
 	// Dividir el token para obtener solo el token Bearer
 	splitToken := strings.Split(reqToken, "Bearer ")
 
@@ -45,7 +46,7 @@ func GetUserId(c echo.Context) uint {
 
 	// Buscar al usuario en la base de datos por ID
 	db.Where("id = ?", userID).First(&usuario)
-	
+
 	return usuario.ID // Retornar el ID del usuario encontrado
 }
 
@@ -54,7 +55,7 @@ func GetUserRole(c echo.Context, id bool) interface{} {
 	var userRole string
 
 	reqToken := c.Request().Header.Get("Authorization")
-	
+
 	splitToken := strings.Split(reqToken, "Bearer ")
 
 	reqToken = splitToken[1]
@@ -73,7 +74,7 @@ func GetUserRole(c echo.Context, id bool) interface{} {
 	rol := new(models.Roles)
 
 	db.Where("nombre = ?", userRole).First(&rol)
-	
+
 	if id {
 		return rol.ID
 	}
@@ -98,4 +99,18 @@ func GenerateRandomCode(length int) string {
 		b[i] = allowedRunes[randomIndex.Int64()]
 	}
 	return string(b)
+}
+
+func CleanSQLError(msg string) error {
+	msg = strings.TrimPrefix(msg, "mssql: ")
+	msg = strings.TrimPrefix(msg, "sql: ")
+
+	return errors.New(strings.TrimSpace(msg))
+}
+
+func RespondWithError(c echo.Context, statusCode int, message string) error {
+	return c.JSON(statusCode, models.ResponseMessage{
+		Status:  "error",
+		Message: CleanSQLError(message).Error(),
+	})
 }
