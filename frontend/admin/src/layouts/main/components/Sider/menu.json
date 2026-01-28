@@ -1,0 +1,71 @@
+[
+  {
+    "path": "/",
+    "item": "Dashboard",
+    "icon": "BarChartOutlined"
+  },
+  {
+    "path": "/ventas",
+    "item": "Ventas",
+    "icon": "ShoppingCartOutlined",
+    "children": [
+      {
+        "path": "/ventas/pedidos",
+        "item": "Pedidos",
+        "icon": "UnorderedListOutlined"
+      },
+      {
+        "path": "/ventas/facturacion",
+        "item": "Facturación",
+        "icon": "FileTextOutlined"
+      }
+    ]
+  },
+  {
+    "path": "/clientes",
+    "item": "Clientes",
+    "icon": "TeamOutlined"
+  },
+  {
+    "path": "/productos",
+    "item": "Productos",
+    "icon": "AppstoreOutlined"
+  },
+  {
+    "path": "/compras",
+    "item": "Compras",
+    "icon": "ShoppingOutlined"
+  },
+  {
+    "path": "/inventario",
+    "item": "Inventario",
+    "icon": "DatabaseOutlined"
+  },
+  {
+    "path": "/reportes",
+    "item": "Reportes",
+    "icon": "BarChartOutlined"
+  },
+  {
+    "path": "/configuracion",
+    "item": "Configuración",
+    "icon": "SettingOutlined",
+    "children": [
+      {
+        "path": "/configuracion/usuarios",
+        "item": "Usuarios",
+        "icon": "UserOutlined"
+      },
+      {
+        "path": "/configuracion/roles",
+        "item": "Roles y permisos",
+        "icon": "SafetyOutlined"
+      },
+      {
+        "path": "/configuracion/empresa",
+        "item": "Empresa",
+        "icon": "BankOutlined"
+      }
+    ]
+  }
+]
