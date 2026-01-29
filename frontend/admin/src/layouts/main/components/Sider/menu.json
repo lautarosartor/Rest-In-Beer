@@ -5,46 +5,56 @@
     "icon": "BarChartOutlined"
   },
   {
-    "path": "/ventas",
-    "item": "Ventas",
-    "icon": "ShoppingCartOutlined",
+    "path": "/mesas",
+    "item": "Mesas",
+    "icon": "QrcodeOutlined",
     "children": [
       {
-        "path": "/ventas/pedidos",
+        "path": "/mesas/pedidos",
         "item": "Pedidos",
         "icon": "UnorderedListOutlined"
       },
       {
-        "path": "/ventas/facturacion",
+        "path": "/mesas/facturacion",
         "item": "Facturación",
         "icon": "FileTextOutlined"
       }
     ]
   },
   {
-    "path": "/clientes",
-    "item": "Clientes",
-    "icon": "TeamOutlined"
+    "path": "/sesiones",
+    "item": "Sesiones",
+    "icon": "CommentOutlined"
   },
   {
     "path": "/productos",
     "item": "Productos",
-    "icon": "AppstoreOutlined"
+    "icon": "AppstoreOutlined",
+    "hidden": true
+  },
+  {
+    "path": "/clientes",
+    "item": "Clientes",
+    "icon": "TeamOutlined",
+    "hidden": true
   },
   {
     "path": "/compras",
     "item": "Compras",
-    "icon": "ShoppingOutlined"
+    "icon": "ShoppingOutlined",
+    "hidden": true
   },
   {
     "path": "/inventario",
     "item": "Inventario",
-    "icon": "DatabaseOutlined"
+    "icon": "DatabaseOutlined",
+    "hidden": true
   },
   {
     "path": "/reportes",
     "item": "Reportes",
-    "icon": "BarChartOutlined"
+    "icon": "BarChartOutlined",
+    "hidden": true
   },
   {
     "path": "/configuracion",

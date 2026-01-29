@@ -1,16 +1,23 @@
+import PrivateRoute from "components/PrivateRoutes";
 import NotFound from "components/results/NotFound";
 import { Route, Routes } from "react-router-dom";
+import Login from "routes/auth/Login";
 import Dashboard from "routes/dashboard";
-import MainLayout from "./layouts/main";
 
 const AppRouter = () => {
   return (
     <Routes>
-      <Route element={<MainLayout />}>
+      {/* Rutas privadas */}
+      <Route element={<PrivateRoute />}>
         <Route index path="/" element={<Dashboard />} />
+        <Route path="/usuarios" element={<Dashboard />} />
         <Route path="/usuarios" element={<Dashboard />} />
         <Route path="*" element={<NotFound />} />
       </Route>
+
+      {/* Rutas públicas */}
+      <Route path="/login" element={<Login />} />
+      {/* <Route path="*" element={<NotFound />} /> */}
     </Routes>
   );
 }

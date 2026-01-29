@@ -1,3 +1,4 @@
+import { message } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,8 +19,7 @@ const useMutation = ({
       const data = await mutationFn(...args);
 
       if (data.message === "invalid or expired jwt") {
-        // Popup con mensaje de error
-        console.error("La sesión ha expirado");
+        message.error("La sesión ha expirado");
 
         localStorage.removeItem("token");
         navigate("/login");
@@ -27,17 +27,16 @@ const useMutation = ({
       }
 
       if (data.status ===  "error") {
-        throw new Error(data.message || "Error de servidor inesperado.");
+        throw data;
       }
 
       setData(data);
       onSuccess && onSuccess(data);
 
     } catch (error) {
-      const msg = error || "El servicio no está disponible en este momento";
-
-      setError(msg)
-      onError && onError(msg);
+      error.message = (error.message || "El servicio no está disponible en este momento");
+      setError(error)
+      onError && onError(error);
     } finally {
       setLoading(false);
     }

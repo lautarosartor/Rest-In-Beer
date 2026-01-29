@@ -1,3 +1,4 @@
+import { message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,8 +21,7 @@ const useQuery = ({
       const data = await queryFn(...args);
 
       if (data.message === "invalid or expired jwt") {
-        // Popup con mensaje de error
-        console.error("La sesión ha expirado");
+        message.error("La sesión ha expirado");
 
         localStorage.removeItem("token");
         navigate("/login");

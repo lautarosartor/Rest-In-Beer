@@ -11,7 +11,7 @@ const Footer = () => {
 
   return (
     <Layout.Footer style={footerStyle}>
-      ©{new Date().getFullYear()} Created by Sartoru Gojo
+      ©{new Date().getFullYear()} Desarrollado por Lautaro Sartor
     </Layout.Footer>
   );
 }

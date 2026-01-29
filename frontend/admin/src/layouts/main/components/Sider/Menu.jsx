@@ -8,13 +8,15 @@ const Menu = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const mapMenuItems = (items) =>
+  const mapMenuItems = (items) => (
     items.map((item) => ({
       key: item.path,
       label: item.item,
       icon: item.icon ? React.createElement(iconMap[item.icon]) : null,
       children: item.children ? mapMenuItems(item.children) : undefined,
-    }));
+      hidden: item.hidden,
+    })).filter(i => !i.hidden)
+  );
 
   const menuStyle = {
     borderInlineEnd: 0,

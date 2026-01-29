@@ -1,3 +1,11 @@
 .ant-typography {
   margin-top: 0;
 }
+
+.ant-menu-item-selected {
+  font-weight: 700;
+}
+
+.ant-menu-submenu-selected > .ant-menu-submenu-title {
+  font-weight: 700;
+}
