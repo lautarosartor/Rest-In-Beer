@@ -12,6 +12,7 @@ const Menu = () => {
     items.map((item) => ({
       key: item.path,
       label: item.item,
+      type: item.type,
       icon: item.icon ? React.createElement(iconMap[item.icon]) : null,
       children: item.children ? mapMenuItems(item.children) : undefined,
       hidden: item.hidden,

@@ -5,10 +5,14 @@
     "icon": "BarChartOutlined"
   },
   {
-    "path": "/mesas",
-    "item": "Mesas",
-    "icon": "QrcodeOutlined",
+    "item": "Gestión",
+    "type": "group",
     "children": [
+      {
+        "path": "/mesas",
+        "item": "Mesas",
+        "icon": "QrcodeOutlined"
+      },
       {
         "path": "/mesas/pedidos",
         "item": "Pedidos",
@@ -18,36 +22,36 @@
         "path": "/mesas/facturacion",
         "item": "Facturación",
         "icon": "FileTextOutlined"
+      },
+      {
+        "path": "/sesiones",
+        "item": "Sesiones",
+        "icon": "CommentOutlined"
       }
     ]
-  },
-  {
-    "path": "/sesiones",
-    "item": "Sesiones",
-    "icon": "CommentOutlined"
-  },
-  {
-    "path": "/productos",
-    "item": "Productos",
-    "icon": "AppstoreOutlined",
-    "hidden": true
-  },
-  {
-    "path": "/clientes",
-    "item": "Clientes",
-    "icon": "TeamOutlined",
-    "hidden": true
-  },
-  {
-    "path": "/compras",
-    "item": "Compras",
-    "icon": "ShoppingOutlined",
-    "hidden": true
   },
   {
     "path": "/inventario",
     "item": "Inventario",
     "icon": "DatabaseOutlined",
+    "hidden": true,
+    "children": [
+      {
+        "path": "/productos",
+        "item": "Productos",
+        "icon": "AppstoreOutlined"
+      },
+      {
+        "path": "/compras",
+        "item": "Compras",
+        "icon": "ShoppingOutlined"
+      }
+    ]
+  },
+  {
+    "path": "/clientes",
+    "item": "Clientes",
+    "icon": "TeamOutlined",
     "hidden": true
   },
   {

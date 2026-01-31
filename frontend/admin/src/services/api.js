@@ -1,5 +1,5 @@
+import { publicOptions } from "utils";
 import { config } from "./config";
-import { publicOptions, /* privateOptions */ } from "utils";
 
 const publicOrigin = config.URL_PUBLIC;
 // const privateOrigin = config.URL_API;

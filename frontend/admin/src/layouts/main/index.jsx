@@ -8,15 +8,12 @@ import Header from "./components/Header";
 import Sider from "./components/Sider";
 
 const MainLayout = () => {
+  const { headerBg } = useStyles();
   const [collapsed, setCollapsed] = useState(false);
-  const { headerBg, colorBgContainer, borderRadiusLG } = useStyles();
 
   const contentStyle = {
     margin: 16,
     marginBottom: 0,
-    padding: 16,
-    background: colorBgContainer,
-    borderRadius: borderRadiusLG,
   };
 
   return (

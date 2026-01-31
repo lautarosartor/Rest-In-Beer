@@ -7,6 +7,7 @@ const Footer = () => {
     alignItems: 'center',
     padding: '0 16px',
     height: 48,
+    backgroundColor: "#3B341F"
   };
 
   return (

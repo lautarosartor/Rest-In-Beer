@@ -1,6 +1,6 @@
 import { Button, Card, Flex, Form, Input } from "antd";
 import Password from "antd/es/input/Password";
-import { LABEL_ALIGN } from "constants/demoData";
+import { LABEL_ALIGN } from "constants/index";
 import useLogin from "./useLogin";
 
 const Login = () => {

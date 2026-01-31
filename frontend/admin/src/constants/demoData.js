@@ -1,5 +1,3 @@
-export const LABEL_ALIGN = "left";
-
 export const THEMES = {
   SYSTEM: 0,
   DEFAULT: 1,

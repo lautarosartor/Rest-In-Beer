@@ -1,9 +1,11 @@
-import { Typography } from "antd";
+import ContentWithHeader from "components/ContentWithHeader";
 
 const Dashboard = () => {
-
   return (
-    <Typography.Title>Dashboard</Typography.Title>
+    <ContentWithHeader
+      title="Dashboard"
+    >
+    </ContentWithHeader>
   );
 }
 
