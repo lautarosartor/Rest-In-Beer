@@ -2,13 +2,19 @@ import { Button, Card, Flex, Form, Input } from "antd";
 import Password from "antd/es/input/Password";
 import { LABEL_ALIGN } from "constants/index";
 import useLogin from "./useLogin";
+import fondoLogin from "assets/fondoLogin.png";
 
 const Login = () => {
   const [form] = Form.useForm();
   const { loading, handleLogin } = useLogin();
 
   return (
-    <Flex style={{ height: '100vh' }}>
+    <Flex
+      style={{
+        height: '100vh',
+        backgroundImage: `url(${fondoLogin})`,
+      }}
+    >
       <Card
         loading={loading}
         style={{
