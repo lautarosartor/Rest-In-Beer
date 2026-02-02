@@ -7,6 +7,7 @@ import { Route, Routes } from "react-router-dom";
 const LoginPage = lazy(() => import("./routes/auth/login"));
 const DashboardPage = lazy(() => import("./routes/dashboard"));
 const MesasPage = lazy(() => import("./routes/mesas"));
+const ProductosPage = lazy(() => import("./routes/productos"));
 
 const AppRouter = () => {
   return (
@@ -16,6 +17,8 @@ const AppRouter = () => {
         <Route element={<PrivateRoute />}>
           <Route index path="/" element={<DashboardPage />} />
           <Route path="/mesas" element={<MesasPage />} />
+          <Route path="/productos" element={<ProductosPage />} />
+
           <Route path="*" element={<NotFound />} />
         </Route>
 

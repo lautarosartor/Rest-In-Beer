@@ -1,6 +1,7 @@
 package pedidos
 
 import (
+	"bar/constants"
 	"bar/database"
 	"bar/models"
 	"fmt"
@@ -24,7 +25,8 @@ type Data struct {
 
 type PedidoRequest struct {
 	models.Pedidos
-	Dni string `json:"dni"`
+	Items []models.PedidosItems `json:"items" gorm:"-"`
+	Dni   string                `json:"dni"`
 }
 
 func GetAllPaginated(c echo.Context) error {
@@ -92,7 +94,7 @@ func Create(c echo.Context) error {
 
 	// Verificamos que la sesion aún esté activa
 	sesion := new(models.Sesiones)
-	db.Where("activo = ?", 1).First(&sesion, payload.Idsesion)
+	db.Where("activo = ?", 1).First(&sesion, payload.SesionID)
 	if sesion.ID == 0 {
 		return c.JSON(http.StatusNotFound, ResponseMessage{
 			Status:  "error",
@@ -103,7 +105,7 @@ func Create(c echo.Context) error {
 	// Chequeamos que el cliente este vinculado a la sesion
 	var puedePedir bool
 	db.Raw("SELECT EXISTS (SELECT 1 FROM sesiones_clientes WHERE idsesion = ? AND idcliente = ?)",
-		payload.Idsesion, clienteID).Scan(&puedePedir)
+		payload.SesionID, clienteID).Scan(&puedePedir)
 
 	if !puedePedir {
 		return c.JSON(http.StatusNotFound, ResponseMessage{
@@ -113,9 +115,9 @@ func Create(c echo.Context) error {
 	}
 
 	newPedido := &models.Pedidos{
-		Idsesion:  payload.Idsesion,
-		Idcliente: clienteID,
-		Idestado:  1, // En preparación
+		SesionID:  payload.SesionID,
+		ClienteID: clienteID,
+		EstadoID:  constants.PREPARACION,
 	}
 
 	tx := db.Begin()
@@ -135,18 +137,18 @@ func Create(c echo.Context) error {
 
 	for _, item := range payload.Items {
 		producto := new(models.Productos)
-		if err := tx.First(&producto, item.Idproducto).Error; err != nil {
+		if err := tx.First(&producto, item.ProductoID).Error; err != nil {
 			tx.Rollback()
 			return c.JSON(http.StatusNotFound, ResponseMessage{
 				Status:  "error",
-				Message: fmt.Sprintf("No se encontro el producto con ID %v.", item.Idproducto),
+				Message: fmt.Sprintf("No se encontro el producto con ID %v.", item.ProductoID),
 			})
 		}
 
 		// Creamos un nuevo item en el pedido
 		newItem := &models.PedidosItems{
-			Idpedido:   newPedido.ID,
-			Idproducto: producto.ID,
+			PedidoID:   newPedido.ID,
+			ProductoID: producto.ID,
 			Cantidad:   item.Cantidad,
 			Subtotal:   producto.Precio * float64(item.Cantidad),
 		}

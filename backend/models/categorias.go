@@ -10,10 +10,9 @@ func (Categorias) TableName() string {
 }
 
 type Subcategorias struct {
-	ID          uint        `json:"id" gorm:"primary_key"`
-	Idcategoria uint        `json:"idcategoria"`
-	Nombre      string      `json:"nombre"`
-	Categoria   *Categorias `json:"categoria,omitempty" gorm:"ForeignKey:idcategoria;AssociationForeignKey:id"`
+	ID          uint   `json:"id" gorm:"primary_key"`
+	CategoriaID uint   `json:"categoria_id"`
+	Nombre      string `json:"nombre"`
 }
 
 func (Subcategorias) TableName() string {

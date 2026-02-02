@@ -27,7 +27,9 @@ const Formulario = ({ form, onFinish, initialValues, loading }) => {
         name="nombre_mesa"
         rules={[RULE_REQUIRED]}
       >
-        <Input />
+        <Input
+          placeholder="Nombre de la mesa"
+        />
       </Form.Item>
 
       <Form.Item
@@ -38,6 +40,7 @@ const Formulario = ({ form, onFinish, initialValues, loading }) => {
         <InputNumber
           min={1}
           max={50}
+          placeholder="Capacidad"
         />
       </Form.Item>
 
@@ -45,7 +48,10 @@ const Formulario = ({ form, onFinish, initialValues, loading }) => {
         label="Descripción"
         name="descripcion"
       >
-        <TextArea autoSize={{ minRows: 1 }} />
+        <TextArea
+          autoSize={{ minRows: 1 }}
+          placeholder="Descripción de la mesa"
+        />
       </Form.Item>
 
       <Popover

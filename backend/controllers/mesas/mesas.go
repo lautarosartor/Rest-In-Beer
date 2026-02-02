@@ -50,7 +50,7 @@ func GetAll(c echo.Context) error {
 	`).
 		Joins(`
 			LEFT JOIN sesiones
-				ON sesiones.idmesa = mesas.id
+				ON sesiones.mesa_id = mesas.id
 				AND sesiones.activo = true
 		`).
 		Order("nombre_mesa ASC").

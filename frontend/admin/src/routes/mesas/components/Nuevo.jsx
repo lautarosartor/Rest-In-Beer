@@ -1,6 +1,7 @@
 import { Form, message, Modal } from "antd";
 import { CANCEL } from "constants/index";
 import useMutation from "hooks/useMutation";
+import { showError } from "utils";
 import { createTable } from "../api";
 import Formulario from "./Formulario";
 
@@ -12,7 +13,8 @@ const Nuevo = ({ onClose }) => {
     onSuccess: (res) => {
       message.success(res.message);
       onClose?.();
-    }
+    },
+    onError: (err) => showError({ err }),
   });
 
   const handleCreate = (values) => {

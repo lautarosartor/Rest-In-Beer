@@ -2,43 +2,41 @@ import { Form, message, Modal } from "antd";
 import { CANCEL } from "constants/index";
 import useMutation from "hooks/useMutation";
 import { showError } from "utils";
-import { updateTable } from "../api";
+import { createProduct } from "../api";
 import Formulario from "./Formulario";
 
-const Editar = ({ mesa, onClose }) => {
+const Nuevo = ({ onClose }) => {
   const [form] = Form.useForm();
 
-  const update = useMutation({
-    mutationFn: updateTable,
+  const create = useMutation({
+    mutationFn: createProduct,
     onSuccess: (res) => {
       message.success(res.message);
-      onClose?.();
+      onClose();
     },
     onError: (err) => showError({ err }),
   });
 
-  const handleUpdate = (values) => {
-    update.mutate(mesa?.id, values);
+  const handleCreate = (values) => {
+    create.mutate(values);
   }
 
   return (
     <Modal
       open={true}
-      title={`Editar mesa #${mesa.nombre_mesa}`}
-      okText="Guardar"
+      title="Crear producto"
+      okText="Crear"
       onOk={() => form.submit()}
       onCancel={() => onClose(CANCEL)}
-      confirmLoading={update.loading}
-      okButtonProps={{ disabled: mesa?.ocupada }}
+      confirmLoading={create.loading}
     >
       <Formulario
         form={form}
-        onFinish={handleUpdate}
-        initialValues={mesa}
-        loading={update.loading}
+        onFinish={handleCreate}
+        loading={create.loading}
       />
     </Modal>
   );
 }
 
-export default Editar;
+export default Nuevo;

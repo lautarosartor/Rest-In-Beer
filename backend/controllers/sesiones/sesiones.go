@@ -167,8 +167,8 @@ func Create(c echo.Context) error {
 
 	// Si no esta activa la creamos
 	newSesion := &models.Sesiones{
-		Idmesa:  mesa.ID,
-		Idowner: cliente.ID,
+		MesaID:  mesa.ID,
+		OwnerID: cliente.ID,
 		Activo:  true,
 	}
 
@@ -181,8 +181,8 @@ func Create(c echo.Context) error {
 	}
 
 	newSesionCliente := &models.SesionesClientes{
-		Idsesion:  newSesion.ID,
-		Idcliente: cliente.ID,
+		SesionID:  newSesion.ID,
+		ClienteID: cliente.ID,
 	}
 
 	if err := tx.Create(&newSesionCliente).Error; err != nil {

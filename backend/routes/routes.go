@@ -63,7 +63,7 @@ func InitRoutes(e *echo.Echo) {
 	a.GET("/categorias", categoriasController.GetAll)
 
 	// subcategories
-	a.GET("/subcategorias", subcategoriasController.GetAll)
+	a.GET("/subcategorias-all", subcategoriasController.GetAll)
 	a.GET("/subcategoria/:id", subcategoriasController.Get)
 
 	// tables
@@ -84,7 +84,7 @@ func InitRoutes(e *echo.Echo) {
 	b.POST("/cliente", clientesController.Create)
 
 	// products
-	b.GET("/productos", productosController.GetAll)
+	b.GET("/productos", productosController.GetPaginated)
 	b.GET("/producto/:id", productosController.Get)
 	a.POST("/producto", productosController.Create)
 	a.PUT("/producto/:id", productosController.Update)

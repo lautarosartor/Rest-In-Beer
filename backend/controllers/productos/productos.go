@@ -3,6 +3,7 @@ package productos
 import (
 	"bar/database"
 	"bar/models"
+	"bar/utils"
 	"fmt"
 	"net/http"
 
@@ -17,34 +18,37 @@ type ResponseMessage struct {
 }
 
 type Data struct {
-	Producto      *models.Productos  `json:"producto,omitempty"`
-	Productos     []models.Productos `json:"productos,omitempty"`
-	TotalDataSize int64              `json:"totalDataSize,omitempty"`
+	Producto      *models.Productos `json:"producto,omitempty"`
+	Productos     []Productos       `json:"productos,omitempty"`
+	TotalDataSize int64             `json:"totalDataSize,omitempty"`
 }
 
-func GetAll(c echo.Context) error {
+type Productos struct {
+	models.Productos
+	Subcategoria string `json:"subcategoria"`
+	CategoriaID  uint   `json:"categoria_id"`
+	Categoria    string `json:"categoria"`
+}
+
+func GetPaginated(c echo.Context) error {
 	db := database.GetDb()
-	searchValue := c.QueryParam("searchValue")
-	searchedColumn := c.QueryParam("searchedColumn")
 
-	switch searchedColumn {
-	case "subcategoria":
-		db = db.Joins("INNER JOIN subcategorias ON productos.id = subcategorias.id").
-			Where("subcaterogias.nombre = ?", searchValue)
-	}
-
-	if searchValue != "" {
-		db = db.Where(`
-			productos.nombre like ?
-		`, "%"+c.QueryParam("searchValue")+"%")
-	}
+	db = db.Joins(`
+		INNER JOIN subcategorias ON productos.subcategoria_id = subcategorias.id
+		INNER JOIN categorias ON subcategorias.categoria_id = categorias.id
+	`)
 
 	var totalDataSize int64 = 0
 	db.Table("productos").Count(&totalDataSize)
 
-	var productos []models.Productos
-	db.Select("productos.*").
-		Preload("Subcategoria.Categoria").
+	var productos []Productos
+	db.Select(`
+		productos.*,
+		subcategorias.nombre AS subcategoria,
+		categorias.id AS categoria_id,
+		categorias.nombre AS categoria
+	`).
+		Scopes(utils.Order(c, "productos.id"), utils.Paginate(c)).
 		Find(&productos)
 
 	data := Data{Productos: productos, TotalDataSize: totalDataSize}
@@ -53,21 +57,6 @@ func GetAll(c echo.Context) error {
 		Data:   data,
 	})
 }
-
-/* func GetAll(c echo.Context) error {
-	db := database.GetDb()
-
-	var totalDataSize int64 = 0
-	var productos []models.Productos
-
-	db.Find(&productos).Count(&totalDataSize)
-
-	data := Data{Productos: productos, TotalDataSize: totalDataSize}
-	return c.JSON(http.StatusOK, ResponseMessage{
-		Status: "success",
-		Data:   data,
-	})
-} */
 
 func Get(c echo.Context) error {
 	db := database.GetDb()
@@ -109,7 +98,7 @@ func Create(c echo.Context) error {
 	}
 
 	newProducto := &models.Productos{
-		Idsubcategoria: payload.Idsubcategoria,
+		SubcategoriaID: payload.SubcategoriaID,
 		Nombre:         payload.Nombre,
 		Descripcion:    payload.Descripcion,
 		Precio:         payload.Precio,

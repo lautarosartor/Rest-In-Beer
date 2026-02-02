@@ -31,10 +31,8 @@
     ]
   },
   {
-    "path": "/inventario",
     "item": "Inventario",
-    "icon": "DatabaseOutlined",
-    "hidden": true,
+    "type": "group",
     "children": [
       {
         "path": "/productos",

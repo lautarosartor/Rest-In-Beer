@@ -2,7 +2,7 @@ import useMutation from "hooks/useMutation";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "services/api";
-import { showError, TOKEN } from "utils";
+import { getToken, showError } from "utils";
 
 const useLogin = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const useLogin = () => {
   }
 
   useEffect(() => {
-    if (TOKEN) {
+    if (getToken()) {
       navigate("/");
     }
   }, []);

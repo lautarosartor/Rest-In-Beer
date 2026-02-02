@@ -8,11 +8,61 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"strconv"
 	"strings"
 
 	extract "github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
+
+func ParseInt(str string) int {
+	id, _ := strconv.ParseUint(str, 10, 32)
+	return int(id)
+}
+
+func Order(c echo.Context, sortField string) func(db *gorm.DB) *gorm.DB {
+	if c.QueryParam("sortField") != "" {
+		sortField = c.QueryParam("sortField")
+	}
+
+	sortOrder := c.QueryParam("sortOrder")
+	if sortOrder == "" {
+		sortOrder = "DESC"
+	}
+
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Order(sortField + " " + sortOrder)
+	}
+}
+
+func Paginate(c echo.Context) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		var page int = 1
+		var limit int = 10
+		var offset int = 0
+
+		if c.QueryParam("limit") != "" {
+			limit = ParseInt(c.QueryParam("limit"))
+		}
+		if c.QueryParam("page") != "" {
+			page = ParseInt(c.QueryParam("page"))
+		}
+		if page <= 0 {
+			page = 1
+		}
+
+		switch {
+		case limit > 100:
+			limit = 100
+		case limit <= 0:
+			limit = 10
+		}
+		offset = limit * (page - 1)
+
+		return db.Offset(offset).Limit(limit)
+	}
+}
 
 // Obtener el ID del usuario activo
 func GetUserId(c echo.Context) uint {

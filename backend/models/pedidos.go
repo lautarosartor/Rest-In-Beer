@@ -3,17 +3,13 @@ package models
 import "time"
 
 type Pedidos struct {
-	ID          uint           `json:"id" gorm:"primary_key"`
-	Idsesion    uint           `json:"idsesion"`
-	Idcliente   uint           `json:"idcliente"`
-	Idestado    uint           `json:"idestado"`
-	Total       float64        `json:"total"`
-	CreatedAt   time.Time      `json:"created_at"`
-	DeliveredAt *time.Time     `json:"delivered_at"`
-	Sesion      *Sesiones      `json:"sesion,omitempty" gorm:"ForeignKey:idsesion;AssociationForeignKey:id"`
-	Cliente     *Clientes      `json:"cliente,omitempty" gorm:"ForeignKey:idcliente;AssociationForeignKey:id"`
-	Estado      *Estados       `json:"estado,omitempty" gorm:"ForeignKey:idestado;AssociationForeignKey:id"`
-	Items       []PedidosItems `json:"items,omitempty" gorm:"ForeignKey:idpedido;AssociationForeignKey:id"`
+	ID          uint       `json:"id" gorm:"primary_key"`
+	SesionID    uint       `json:"sesion_id"`
+	ClienteID   uint       `json:"cliente_id"`
+	EstadoID    uint       `json:"estado_id"`
+	Total       float64    `json:"total"`
+	CreatedAt   time.Time  `json:"created_at"`
+	DeliveredAt *time.Time `json:"delivered_at"`
 }
 
 func (Pedidos) TableName() string {
@@ -21,13 +17,11 @@ func (Pedidos) TableName() string {
 }
 
 type PedidosItems struct {
-	ID         uint       `json:"id" gorm:"primary_key"`
-	Idpedido   uint       `json:"idpedido"`
-	Idproducto uint       `json:"idproducto"`
-	Cantidad   int        `json:"cantidad"`
-	Subtotal   float64    `json:"subtotal"`
-	Pedido     *Pedidos   `json:"pedido,omitempty" gorm:"ForeignKey:idpedido;AssociationForeignKey:id"`
-	Producto   *Productos `json:"producto,omitempty" gorm:"ForeignKey:idproducto;AssociationForeignKey:id"`
+	ID         uint    `json:"id" gorm:"primary_key"`
+	PedidoID   uint    `json:"pedido_id"`
+	ProductoID uint    `json:"producto_id"`
+	Cantidad   int     `json:"cantidad"`
+	Subtotal   float64 `json:"subtotal"`
 }
 
 func (PedidosItems) TableName() string {
