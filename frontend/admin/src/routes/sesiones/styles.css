@@ -1,0 +1,17 @@
+.circulo-estado {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.circulo-animacion {
+  animation: pulsar 1.5s infinite; /* Llama a la animación pulsar */
+}
+
+/* Definición de la animación */
+@keyframes pulsar {
+  50% {
+    box-shadow: 0 0 10px var(--color); /* Sombra con color dependiente del estado */
+  }
+}

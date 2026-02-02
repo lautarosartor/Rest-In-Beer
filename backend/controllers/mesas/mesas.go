@@ -40,7 +40,7 @@ func GetAll(c echo.Context) error {
 	db.Table("mesas").Count(&totalDataSize)
 
 	if c.QueryParam("q") != "" {
-		db = db.Where("(nombre_mesa LIKE ?)", "%"+c.QueryParam("q")+"%")
+		db = db.Where("(mesas.nombre LIKE ?)", "%"+c.QueryParam("q")+"%")
 	}
 
 	var mesas []Mesas
@@ -53,7 +53,7 @@ func GetAll(c echo.Context) error {
 				ON sesiones.mesa_id = mesas.id
 				AND sesiones.activo = true
 		`).
-		Order("nombre_mesa ASC").
+		Order("mesas.nombre ASC").
 		Find(&mesas)
 
 	data := Data{Mesas: mesas, TotalDataSize: totalDataSize}
@@ -89,12 +89,12 @@ func Create(c echo.Context) error {
 	}
 
 	// Validación manual de los campos requeridos
-	if payload.NombreMesa == "" || payload.Capacidad == 0 {
+	if payload.Nombre == "" || payload.Capacidad == 0 {
 		return utils.RespondWithError(c, http.StatusBadRequest, "El nombre de la mesa y la capacidad son obligatorios.")
 	}
 
 	newMesa := &models.Mesas{
-		NombreMesa:  payload.NombreMesa,
+		Nombre:      payload.Nombre,
 		Capacidad:   payload.Capacidad,
 		CodigoQR:    utils.GenerateRandomCode(10),
 		Descripcion: payload.Descripcion,
@@ -103,7 +103,7 @@ func Create(c echo.Context) error {
 	// Creamos la mesa
 	if err := db.Create(&newMesa).Error; err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
-			return utils.RespondWithError(c, http.StatusBadRequest, fmt.Sprintf("Ya existe una mesa con el mismo nombre: '%v'.", newMesa.NombreMesa))
+			return utils.RespondWithError(c, http.StatusBadRequest, fmt.Sprintf("Ya existe una mesa con el mismo nombre: '%v'.", newMesa.Nombre))
 		} else {
 			return utils.RespondWithError(c, http.StatusInternalServerError, "Error inesperado al crear la mesa.")
 		}

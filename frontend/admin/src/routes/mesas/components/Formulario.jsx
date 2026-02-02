@@ -24,7 +24,7 @@ const Formulario = ({ form, onFinish, initialValues, loading }) => {
     >
       <Form.Item
         label="Nombre"
-        name="nombre_mesa"
+        name="nombre"
         rules={[RULE_REQUIRED]}
       >
         <Input

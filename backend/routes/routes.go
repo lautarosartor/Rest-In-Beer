@@ -51,7 +51,7 @@ func InitRoutes(e *echo.Echo) {
 	a.PUT("/usuario/:id", usuariosController.Update)
 
 	// sesions
-	a.GET("/sesiones", sesionesController.GetAll)
+	a.GET("/sesiones", sesionesController.GetPaginated)
 	b.GET("/sesion", sesionesController.Get)
 	b.POST("/sesion", sesionesController.Create)
 	b.DELETE("/sesion/:id", sesionesController.Delete)

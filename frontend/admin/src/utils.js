@@ -62,7 +62,7 @@ export const formatQuantity = (value) => {
 
 export const formatDate = (value, format = "DD/MM/YYYY") => {
   if (!value || value === "0001-01-01T00:00:00Z") return '';
-  return dayjs(value).utc().format(format);
+  return dayjs(value).format(format);
   // return dayjs.tz(value, "America/Argentina/Buenos_Aires").format(format);
 };
 

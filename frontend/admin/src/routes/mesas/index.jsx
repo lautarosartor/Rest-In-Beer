@@ -88,7 +88,7 @@ const Mesas = () => {
             key={mesa.id}
             loading={loading}
             size="small"
-            title={mesa.nombre_mesa}
+            title={mesa.nombre}
             actions={[
               <Tooltip
                 key="1"

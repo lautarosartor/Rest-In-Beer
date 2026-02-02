@@ -24,7 +24,7 @@ const Editar = ({ mesa, onClose }) => {
   return (
     <Modal
       open={true}
-      title={`Editar mesa #${mesa.nombre_mesa}`}
+      title={`Editar mesa #${mesa.nombre}`}
       okText="Guardar"
       onOk={() => form.submit()}
       onCancel={() => onClose(CANCEL)}

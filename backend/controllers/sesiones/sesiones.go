@@ -3,6 +3,7 @@ package sesiones
 import (
 	"bar/database"
 	"bar/models"
+	"bar/utils"
 	"fmt"
 	"net/http"
 	"time"
@@ -17,10 +18,17 @@ type ResponseMessage struct {
 }
 
 type Data struct {
-	Cliente       *models.Clientes  `json:"cliente,omitempty"`
-	Sesion        *models.Sesiones  `json:"sesion,omitempty"`
-	Sesiones      []models.Sesiones `json:"sesiones,omitempty"`
-	TotalDataSize int64             `json:"totalDataSize,omitempty"`
+	Cliente       *models.Clientes `json:"cliente,omitempty"`
+	Sesion        *models.Sesiones `json:"sesion,omitempty"`
+	Sesiones      []Sesiones       `json:"sesiones,omitempty"`
+	TotalDataSize int64            `json:"totalDataSize,omitempty"`
+}
+
+type Sesiones struct {
+	models.Sesiones
+	Mesa     string `json:"mesa"`
+	CodigoQr string `json:"codigo_qr"`
+	Creador  string `json:"creador"`
 }
 
 type CreateSesion struct {
@@ -28,18 +36,30 @@ type CreateSesion struct {
 	Dni      string `json:"dni"`
 }
 
-func GetAll(c echo.Context) error {
+func GetPaginated(c echo.Context) error {
 	db := database.GetDb()
 
 	if c.QueryParam("activas") == "SI" {
 		db = db.Where("activo = ?", 1)
 	}
 
+	db = db.Joins(`
+		INNER JOIN mesas ON sesiones.mesa_id = mesas.id
+		INNER JOIN clientes ON sesiones.owner_id = clientes.id
+	`)
+
 	var totalDataSize int64 = 0
 	db.Table("sesiones").Count(&totalDataSize)
 
-	var sesiones []models.Sesiones
-	db.Preload("Mesa").Order("finished_at ASC").Find(&sesiones)
+	var sesiones []Sesiones
+	db.Select(`
+		sesiones.*,
+		mesas.nombre AS mesa,
+		mesas.codigo_qr,
+		CONCAT(clientes.nombre, ' ', clientes.apellido) AS creador
+	`).
+		Scopes(utils.Order(c, "sesiones.activo"), utils.Paginate(c)).
+		Find(&sesiones)
 
 	if len(sesiones) == 0 {
 		return c.JSON(http.StatusOK, ResponseMessage{
@@ -197,7 +217,7 @@ func Create(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, ResponseMessage{
 		Status:  "success",
-		Message: fmt.Sprintf("¡Bienvenido %s, iniciaste una nueva sesión en la '%s'!", cliente.Nombre, mesa.NombreMesa),
+		Message: fmt.Sprintf("¡Bienvenido %s, iniciaste una nueva sesión en la '%s'!", cliente.Nombre, mesa.Nombre),
 	})
 }
 

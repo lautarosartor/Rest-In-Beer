@@ -1,10 +1,9 @@
 import useQuery from "hooks/useQuery";
 import queryString from "query-string";
 import { useEffect, useState } from "react";
-import { showError } from "utils";
-import { getPaginatedProducts } from "./api";
+import { getPaginatedSesiones } from "./api";
 
-const useGetProductos = () => {
+const useGetSesiones = () => {
   const [searchValue, setSearchValue] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const [pagination, setPagination] = useState({
@@ -30,11 +29,10 @@ const useGetProductos = () => {
 
   const { data, loading, refetch } = useQuery({
     autoFetch: false,
-    queryFn: getPaginatedProducts,
-    onError: (err) => showError({ err }),
+    queryFn: getPaginatedSesiones,
   });
 
-  const fetchProductos = () => {
+  const fetchSesiones = () => {
     const query = queryString.stringify({
       limit: pagination.pageSize,
       page: pagination.current,
@@ -45,20 +43,20 @@ const useGetProductos = () => {
     });
     refetch(query);
   }
-  
+
   useEffect(() => {
-    fetchProductos();
+    fetchSesiones();
   }, []);
 
   return {
-    productos: data?.data?.productos,
+    sesiones: data?.data?.sesiones,
     total: data?.data?.totalDataSize,
     loading,
     pagination,
-    fetchProductos,
+    fetchSesiones,
     onTableChange,
     onSearch,
-  }
+  };
 }
 
-export default useGetProductos;
+export default useGetSesiones;

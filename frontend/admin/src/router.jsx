@@ -8,6 +8,7 @@ const LoginPage = lazy(() => import("./routes/auth/login"));
 const DashboardPage = lazy(() => import("./routes/dashboard"));
 const MesasPage = lazy(() => import("./routes/mesas"));
 const ProductosPage = lazy(() => import("./routes/productos"));
+const SesionesPage = lazy(() => import("./routes/sesiones"));
 
 const AppRouter = () => {
   return (
@@ -18,6 +19,7 @@ const AppRouter = () => {
           <Route index path="/" element={<DashboardPage />} />
           <Route path="/mesas" element={<MesasPage />} />
           <Route path="/productos" element={<ProductosPage />} />
+          <Route path="/sesiones" element={<SesionesPage />} />
 
           <Route path="*" element={<NotFound />} />
         </Route>

@@ -8,7 +8,7 @@ import Formulario from "./Formulario";
 
 const Editar = ({ mesa, closeModal }) => {
   const initForm = useState({
-    nombre_mesa: '',
+    nombre: '',
     capacidad: 0,
     codigo_qr: '',
     descripcion: '',
