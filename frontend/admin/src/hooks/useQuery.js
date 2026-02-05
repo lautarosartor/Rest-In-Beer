@@ -1,54 +1,55 @@
-import { message } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { showError } from "utils";
 
 const useQuery = ({
   queryFn,
-  onSuccess,
-  onError,
   args = [],
-  autoFetch = true
+  autoFetch = true,
+  onSuccess = () => {},
+  onError = () => {},
 }) => {
   const navigate = useNavigate();
   const [data, setData] = useState();
-  const [error, setError] = useState();
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(autoFetch ? true: false);
 
-  const refetch = async (...args) => {
+  const refetch = useCallback(async (...args) => {
     setLoading(true);
 
     try {
-      const data = await queryFn(...args);
+      const response = await queryFn(...args);
 
-      if (data.message === "invalid or expired jwt") {
-        message.error("La sesión ha expirado");
+      if (response.message === "invalid or expired jwt") {
+        showError({ title: "Sesión expirada" });
 
         localStorage.removeItem("token");
         navigate("/login");
         return;
       }
 
-      if (data.status !== "error") {
-        setData(data);
-        onSuccess && onSuccess(data);
-        return data;
+      if (response.status === "error") {
+        throw new Error(response.message || "Error inesperado.");
       }
 
-      throw new Error(data.message || "Error de servidor inesperado.");
-      
-    } catch (error) {
-      const msg = error || "El servicio no está disponible en este momento."
+      if (response.status === "success") {
+        setData(response);
+        onSuccess?.(response);
+        return response;
+      }
+    } catch (err) {
+      const msg = err?.message || "El servicio no está disponible en este momento."
 
       setError(msg)
-      onError && onError(msg);
+      onError?.(err);
     } finally {
       setLoading(false);
     }
-  }
+  }, [queryFn, onSuccess, onError]);
 
   useEffect(() => {
     if (!autoFetch) return;
-    
+
     refetch(...args);
   }, [...args]);
 
