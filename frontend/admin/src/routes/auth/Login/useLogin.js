@@ -2,7 +2,8 @@ import useMutation from "hooks/useMutation";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "services/api";
-import { getToken, showError } from "utils";
+import { getToken } from "services/helpers";
+import { showError } from "utils";
 
 const useLogin = () => {
   const navigate = useNavigate();

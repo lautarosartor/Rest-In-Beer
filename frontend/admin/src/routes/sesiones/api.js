@@ -1,5 +1,5 @@
 import { config } from "services/config";
-import { privateOptions } from "utils";
+import { privateOptions } from "services/helpers";
 
 export const getPaginatedSesiones = async (q = '') => {
   const url = `${config.URL_API}/sesiones?${q}`;

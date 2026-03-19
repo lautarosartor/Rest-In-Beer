@@ -1,9 +1,9 @@
 import { config } from "services/config";
-import { privateOptions } from "utils";
+import { privateOptions, publicOptions } from "services/helpers";
 
 export const getAllTables = async (q = '') => {
-  const url = `${config.URL_API}/mesas?${q}`;
-  const response = await fetch(url, privateOptions('GET'));
+  const url = `${config.URL_PUBLIC}/mesas?${q}`;
+  const response = await fetch(url, publicOptions('GET'));
   const data = await response.json();
   return data;
 }

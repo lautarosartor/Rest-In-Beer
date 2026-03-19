@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { showError } from "utils";
 
 const useQuery = ({
@@ -10,6 +10,7 @@ const useQuery = ({
   onError = () => {},
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [data, setData] = useState();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(autoFetch ? true: false);
@@ -20,22 +21,28 @@ const useQuery = ({
     try {
       const response = await queryFn(...args);
 
-      if (response.message === "invalid or expired jwt") {
-        showError({ title: "Sesión expirada" });
-
-        localStorage.removeItem("token");
-        navigate("/login");
-        return;
+      switch (response?.code) {
+        case "TOKEN_INVALID":
+          showError({ title: response.message });
+          localStorage.removeItem("token");
+          navigate("/login");
+          return;
+          
+        case "CLIENT_TOKEN_INVALID":
+          showError({ title: response.message });
+          localStorage.removeItem("client_token");
+          navigate("/sesion/auth", { state: { redirectTo: location } } );
+          return;
       }
 
-      if (response.status === "error") {
-        throw new Error(response.message || "Error inesperado.");
-      }
-
-      if (response.status === "success") {
-        setData(response);
-        onSuccess?.(response);
-        return response;
+      switch (response.status) {
+        case "success":
+          setData(response);
+          onSuccess?.(response);
+          return response;
+      
+        case "error":
+          throw new Error(response.message || "Error inesperado.");
       }
     } catch (err) {
       const msg = err?.message || "El servicio no está disponible en este momento."

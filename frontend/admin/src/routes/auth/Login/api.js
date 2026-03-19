@@ -1,5 +1,5 @@
 import { config } from "services/config";
-import { publicOptions } from "utils";
+import { publicOptions } from "services/helpers";
 
 export const login = async (data) => {
   const url = `${config.URL_PUBLIC}/login`;

@@ -61,7 +61,7 @@ const Formulario = ({ form, onFinish, initialValues, loading }) => {
           <QRCode
             size={100}
             bordered={false}
-            value={`${config.URL_BASE}/sesion/${codigoQR}`}
+            value={`${config.URL_BASE}/mesa/${codigoQR}`}
           />
         }
       >

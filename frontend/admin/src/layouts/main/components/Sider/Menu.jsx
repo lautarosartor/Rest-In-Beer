@@ -1,5 +1,6 @@
 import { Menu as AntMenu } from "antd";
 import { iconMap } from "components/DynamicIcon";
+import { removeSession } from "hooks/usePersistedFilters";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import menu from "./menu.json";
@@ -24,13 +25,18 @@ const Menu = () => {
     height: '100%',
   }
 
+  const handleClick = (key) => {
+    removeSession("pagination");
+    navigate(key);
+  }
+
   return (
     <AntMenu
       mode="inline"
       triggerSubMenuAction="click"
       selectedKeys={[location.pathname]}
       items={mapMenuItems(menu)}
-      onClick={({ key }) => navigate(key)}
+      onClick={({ key }) => handleClick(key)}
       style={menuStyle}
     />
   );

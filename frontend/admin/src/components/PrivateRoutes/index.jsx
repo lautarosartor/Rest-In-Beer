@@ -1,9 +1,10 @@
 import { Navigate } from "react-router-dom";
+import { getToken } from "services/helpers";
 import MainLayout from "../../layouts/main";
 
 const PrivateRoute = () => {
   // Aquí es donde comprobarías si el usuario está autenticado
-  const isAuthenticated = localStorage.getItem("token");
+  const isAuthenticated = getToken();
 
   // Si esta authenticado muestra los componentes, sino lo redirige a logearse
   if (isAuthenticated) {

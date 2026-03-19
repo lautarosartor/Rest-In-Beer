@@ -10,7 +10,7 @@ const useGetSesiones = () => {
     filters,
     onTableChange,
     onSearch,
-  } = usePersistedFilters("sesiones.filters");
+  } = usePersistedFilters("pagination");
 
   const { pagination, sorting, searchValue, searchedColumn } = filters;
 

@@ -96,7 +96,7 @@ const Mesas = () => {
                 mouseLeaveDelay={0}
               >
                 <ExportOutlined
-                  onClick={() => navigate(`/sesion/${mesa.codigo_qr}`)}
+                  onClick={() => navigate(`/mesa/${mesa.codigo_qr}`)}
                 />
               </Tooltip>,
               <Tooltip
@@ -124,7 +124,7 @@ const Mesas = () => {
                 <QRCode
                   size={100}
                   bordered={false}
-                  value={`${config.URL_BASE}/sesion/${mesa.codigo_qr}`}
+                  value={`${config.URL_BASE}/mesa/${mesa.codigo_qr}`}
                 />
               ) : (
                 <Alert

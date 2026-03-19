@@ -1,6 +1,6 @@
-import { message } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { showError } from "utils";
 
 const useMutation = ({
   mutationFn,
@@ -16,29 +16,38 @@ const useMutation = ({
     setLoading(true);
 
     try {
-      const data = await mutationFn(...args);
+      const response = await mutationFn(...args);
 
-      if (data.message === "invalid or expired jwt") {
-        message.error("La sesión ha expirado");
+      if (response.code === "TOKEN_INVALID") {
+        showError({ title: response.message });
 
         localStorage.removeItem("token");
         navigate("/login");
         return;
       }
 
-      if (data.status ===  "error") {
-        throw data;
+      if (response.code === "CLIENT_TOKEN_INVALID") {
+        showError({ title: response.message });
+
+        localStorage.removeItem("client_token");
+        navigate("/sesion/auth");
+        return;
       }
 
-      setData(data);
-      onSuccess && onSuccess(data);
+      if (response.status ===  "error") {
+        throw new Error(response.message || "Error inesperado.");
+      }
+      setData(response);
+      onSuccess?.(response);
+    } catch (err) {
+      const msg = err?.message || "El servicio no está disponible en este momento."
 
-    } catch (error) {
-      error.message = (error.message || "El servicio no está disponible en este momento");
-      setError(error)
-      onError && onError(error);
+      setError(msg)
+      onError?.(err);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 700);
     }
   }
 

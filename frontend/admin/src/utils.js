@@ -1,25 +1,6 @@
 import { Modal, notification } from "antd";
 import dayjs from "dayjs";
 
-export const getToken = () => localStorage.getItem("token");
-
-export const publicOptions = (method, body) => ({
-  method,
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(body),
-});
-
-export const privateOptions = (method, body) => ({
-  method,
-  headers: {
-    "Authorization": "Bearer " + getToken(),
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(body),
-});
-
 export const showErrorModal = ({ title, err, ...props }) => {
   Modal.error({
     title: title || "Error",
@@ -33,6 +14,17 @@ export const showError = ({ title, placement, err, ...props }) => {
     title: title || "Error",
     placement: placement,
     description: (err && typeof err === "string") ? err : err?.message || JSON.stringify(err),
+    maxCount: 3,
+    showProgress: true,
+    ...props,
+  });
+};
+
+export const showNotification = ({ method = "info", title, placement, msg, ...props }) => {
+  notification[method] ({
+    title: title || "Info",
+    placement: placement,
+    description: (msg && typeof err === "string") ? msg : msg?.message || JSON.stringify(msg),
     maxCount: 3,
     showProgress: true,
     ...props,
@@ -74,4 +66,13 @@ export const filterOption = (inputValue, option) => {
   const parsedOption = eliminarTildes(option.label.toLowerCase());
   const parsedInput = eliminarTildes(inputValue.normalize().toLowerCase());
   return parsedOption.includes(parsedInput);
+};
+
+export const randomColor = () => {
+  return (
+    "#" +
+    Math.floor(Math.random() * 16777215)
+      .toString(16)
+      .padStart(6, "0")
+  );
 };

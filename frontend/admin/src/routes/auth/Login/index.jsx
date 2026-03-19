@@ -1,11 +1,14 @@
 import { Button, Card, Flex, Form, Input } from "antd";
 import Password from "antd/es/input/Password";
-import { LABEL_ALIGN } from "constants/index";
-import useLogin from "./useLogin";
 import fondoLogin from "assets/fondoLogin.png";
+import { LABEL_ALIGN } from "constants/index";
+import { useState } from "react";
+import useLogin from "./useLogin";
+import Mesas from "./components/Mesas";
 
 const Login = () => {
   const [form] = Form.useForm();
+  const [openMesas, setOpenMesas] = useState(false);
   const { loading, handleLogin } = useLogin();
 
   return (
@@ -44,18 +47,27 @@ const Login = () => {
             <Password />
           </Form.Item>
 
-          <Form.Item
-            noStyle
-          >
+          <Flex justify="space-between" gap={16}>
             <Button
               type="primary"
               htmlType="submit"
             >
               Iniciar Sesión
             </Button>
-          </Form.Item>
+            
+            <Button
+              // color="secondary"
+              onClick={() => setOpenMesas(true)}
+            >
+              Ver mesas
+            </Button>
+          </Flex>
         </Form>
       </Card>
+
+      {openMesas &&
+        <Mesas onClose={() => setOpenMesas(false)} />
+      }
     </Flex>
   );
 }

@@ -1,8 +1,9 @@
-import { privateOptions, publicOptions } from "utils";
 import { config } from "./config";
+import { privateOptions, publicOptions } from "./helpers";
 
 const publicOrigin = config.URL_PUBLIC;
 const privateOrigin = config.URL_API;
+// const privateClientOrigin = config.URL_CLIENT;
 
 export const login = async (data) => {
   const response = await fetch(publicOrigin + "/login", publicOptions('POST', data));

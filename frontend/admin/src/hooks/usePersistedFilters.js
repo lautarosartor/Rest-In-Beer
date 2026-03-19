@@ -5,7 +5,7 @@ const DEFAULT_STATE = {
   searchedColumn: "",
   pagination: {
     current: 1,
-    pageSize: 1,
+    pageSize: 10,
     showSizeChanger: true,
   },
   sorting: {
@@ -25,6 +25,10 @@ export const loadFromSession = (key, fallback) => {
 
 export const saveToSession = (key, value) => {
   sessionStorage.setItem(key, JSON.stringify(value));
+};
+
+export const removeSession = (key) => {
+  sessionStorage.removeItem(key);
 };
 
 const usePersistedFilters = (

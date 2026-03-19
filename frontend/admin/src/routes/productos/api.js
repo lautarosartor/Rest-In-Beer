@@ -1,5 +1,5 @@
 import { config } from "services/config";
-import { privateOptions } from "utils";
+import { privateOptions } from "services/helpers";
 
 export const getPaginatedProducts = async (q = '') => {
   const url = `${config.URL_PUBLIC}/productos?${q}`;
