@@ -45,9 +45,13 @@ const useQuery = ({
           throw new Error(response.message || "Error inesperado.");
       }
     } catch (err) {
-      const msg = err?.message || "El servicio no está disponible en este momento."
+      const isNetworkError = err instanceof TypeError;
+      const msg = isNetworkError
+        ? "El servicio no está disponible en este momento."
+        : err?.message || "Error inesperado.";
 
-      setError(msg)
+      err.message = msg;
+      setError(msg);
       onError?.(err);
     } finally {
       setLoading(false);

@@ -40,9 +40,13 @@ const useMutation = ({
       setData(response);
       onSuccess?.(response);
     } catch (err) {
-      const msg = err?.message || "El servicio no está disponible en este momento."
+      const isNetworkError = err instanceof TypeError;
+      const msg = isNetworkError
+        ? "El servicio no está disponible en este momento."
+        : err?.message || "Error inesperado.";
 
-      setError(msg)
+      err.message = msg;
+      setError(msg);
       onError?.(err);
     } finally {
       setTimeout(() => {
