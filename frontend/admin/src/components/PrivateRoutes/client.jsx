@@ -1,6 +1,6 @@
+import SesionLayout from "components/layouts/sesion";
 import { Navigate, useLocation } from "react-router-dom";
 import { getClientToken } from "services/helpers";
-import SesionLayout from "../../layouts/sesion";
 
 const PrivateClientRoute = () => {
   // Aquí es donde comprobarías si el cliente está autenticado

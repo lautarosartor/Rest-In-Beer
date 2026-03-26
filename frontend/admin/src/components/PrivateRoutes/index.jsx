@@ -1,6 +1,6 @@
+import MainLayout from "components/layouts/main";
 import { Navigate } from "react-router-dom";
 import { getToken } from "services/helpers";
-import MainLayout from "../../layouts/main";
 
 const PrivateRoute = () => {
   // Aquí es donde comprobarías si el usuario está autenticado

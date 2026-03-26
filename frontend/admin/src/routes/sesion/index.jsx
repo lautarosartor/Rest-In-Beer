@@ -1,11 +1,11 @@
 import { ShoppingCartOutlined } from "@ant-design/icons";
-import { Button, Col, Divider, Flex, Image, Layout, Row, Spin, Tag, Typography } from "antd";
+import { Button, Col, ConfigProvider, Divider, Flex, Image, Layout, Row, Spin, Tag, theme, Typography } from "antd";
 import { CHECKOUTS } from "constants/demoData";
 import { CANCEL } from "constants/index";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getClientClaims } from "services/helpers";
-import { formatCurrency, formatDate, formatQuantity } from "utils";
+import { formatCurrency, formatDate } from "utils";
 import Carrito from "./components/Carrito";
 import Chat from "./components/Chat";
 import { disconnectSocket, initiateSocket, subscribeToChat, subscribeToChatHistory } from "./components/Chat/useSocket";
@@ -120,36 +120,36 @@ const Sesion = () => {
   }, [pedidos, messages]);
 
   return (
-    <Spin
-      tip="Cargando mesa..."
-      spinning={loadingSesion}
+    <ConfigProvider
+      theme={{ algorithm: theme.darkAlgorithm }}
     >
-      {code === CHECKOUTS.ALREADY_IN_SESSION &&
-        <Flex
-          vertical
-          style={{
-            height: "100vh",
-            maxWidth: 1000,
-            margin: "0 auto",
-            background: "#202C33",
-          }}
-        >
+      <Spin
+        spinning={loadingSesion}
+        description="Cargando mesa..."
+      >
+        {code === CHECKOUTS.ALREADY_IN_SESSION &&
           <Flex
             vertical
-            style={{ padding: 16 }}
+            style={{
+              height: "100vh",
+              maxWidth: 1000,
+              margin: "0 auto",
+              background: "#202C33",
+            }}
           >
             <Flex
               justify="space-between"
               align="center"
               wrap
-              style={{ gap: 12 }}
+              gap={12}
+              style={{ padding: 16 }}
             >
               <Flex vertical>
                 <Text strong>
                   Pedidos en grupo
                 </Text>
                 <Text type="secondary">
-                  {formatQuantity(totalItems)} items en el pedido
+                  {totalItems} items en el pedido
                 </Text>
               </Flex>
 
@@ -180,233 +180,243 @@ const Sesion = () => {
                 </Flex>
               </Flex>
             </Flex>
-          </Flex>
-          
-          <Content
-            className="fondo-pedidos-grupal"
-            style={{ padding: "8px 16px", overflowY: "auto" }}
-          >
-            {timeline.map((entry, index) => {
-              const { isMine } = entry;
-              const prevEntry = timeline[index - 1];
+            
+            <Content className="fondo-pedidos-grupal">
+              {timeline.map((entry, index) => {
+                const { isMine } = entry;
+                const prevEntry = timeline[index - 1];
 
-              if (entry.type === "pedido") {
-                const { pedido, item } = entry;
-                const showName = prevEntry?.pedido?.cliente?.dni !== pedido?.cliente?.dni
-                  || prevEntry?.type !== "pedido";
+                if (entry.type === "pedido") {
+                  const { pedido, item } = entry;
+                  const showName = prevEntry?.pedido?.cliente?.dni !== pedido?.cliente?.dni
+                    || prevEntry?.type !== "pedido";
+
+                  return (
+                    <Flex
+                      key={`pedido-${item.id}`}
+                      vertical
+                      align={isMine ? "end" : "start"}
+                      style={{
+                        marginTop: showName ? 12 : 4,
+                        width: "100%",
+                      }}
+                    >
+                      {showName && (
+                        <Text
+                          strong
+                          style={{
+                            fontSize: 11,
+                            marginBottom: 2,
+                            color: pedido?.cliente?.color,
+                            marginLeft: isMine ? 0 : 8,
+                            marginRight: isMine ? 8 : 0,
+                          }}
+                        >
+                          {pedido?.cliente?.nombre} {pedido?.cliente?.apellido}
+                        </Text>
+                      )}
+
+                      <div
+                        className={isMine ? "bubble-sent" : "bubble-received"}
+                        style={{
+                          padding: 8,
+                          paddingBottom: 4,
+                          borderRadius: 12,
+                          background: isMine ? "#005C4B" : "#2A3942",
+                          maxWidth: 320,
+                          width: "100%",
+                        }}
+                      >
+                        <Row gutter={8}>
+                          <Col>
+                            <Image
+                              src={item?.producto?.img_url}
+                              alt={item?.producto?.nombre}
+                              width={64}
+                              height={64}
+                              preview={false}
+                              style={{
+                                objectFit: "cover",
+                                borderRadius: 10,
+                              }}
+                            />
+                          </Col>
+
+                          <Col flex="1">
+                            <Text
+                              strong
+                              style={{ display: "block" }}
+                            >
+                              {item.producto?.nombre}
+                            </Text>
+
+                            <Text
+                              style={{
+                                fontSize: 11,
+                                color: "#aaa",
+                              }}
+                            >
+                              {item.producto?.descripcion}
+                            </Text>
+
+                            <div style={{ marginTop: 4 }}>
+                              <Tag
+                                variant="solid"
+                                color={pedido?.estado?.color}
+                                style={{ fontSize: 11 }}
+                              >
+                                {pedido?.estado?.descripcion}
+                                {pedido?.delivered_at && ` · ${formatDate(pedido?.delivered_at, "HH:mm")}`}
+                              </Tag>
+                            </div>
+                          </Col>
+                        </Row>
+
+                        {/* Footer de la burbuja */}
+                        <Flex
+                          justify="space-between"
+                          align="center"
+                        >
+                          <Text
+                            strong
+                            style={{
+                              fontSize: 11,
+                              color: "#aaa",
+                            }}
+                          >
+                            x{item?.cantidad} · {formatCurrency(item?.subtotal)}
+                          </Text>
+                          
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              color: "#aaa",
+                            }}
+                          >
+                            {formatDate(pedido?.created_at, "HH:mm")}
+                          </Text>
+                        </Flex>
+                      </div>
+                    </Flex>
+                  );
+                }
+
+                // type === "mensaje"
+                const { msg } = entry;
+                const showName = prevEntry?.msg?.sender?.dni !== msg.sender?.dni
+                  || prevEntry?.type !== "mensaje";
 
                 return (
                   <div
-                    key={`pedido-${item.id}`}
+                    key={`msg-${index}`}
                     style={{
                       display: "flex",
                       flexDirection: "column",
-                      alignItems: isMine ? "end" : "start",
-                      marginTop: showName ? 12 : 4,
-                      width: "100%",
+                      alignItems: isMine ? "flex-end" : "flex-start",
+                      marginTop: showName ? 12 : 2,
                     }}
                   >
-                    {showName && (
+                    {showName && !isMine && (
                       <Text
                         style={{
                           fontSize: 11,
-                          color: pedido?.cliente?.color || "#aaa",
+                          color: msg.sender?.color || "#aaa",
                           marginBottom: 2,
-                          marginLeft: isMine ? 0 : 8,
-                          marginRight: isMine ? 8 : 0,
+                          marginLeft: 8,
                         }}
                       >
-                        {pedido?.cliente?.nombre} {pedido?.cliente?.apellido}
+                        {msg.sender?.nombre}
                       </Text>
                     )}
 
                     <div
                       style={{
-                        position: "relative",
-                        padding: 8,
-                        paddingBottom: 28,
-                        borderRadius: 12,
-                        color: "#FFF",
                         background: isMine ? "#005C4B" : "#2A3942",
+                        padding: "6px 10px 18px",
+                        borderRadius: 10,
+                        color: "#FFF",
                         maxWidth: 320,
-                        width: "100%",
+                        position: "relative",
+                        minWidth: 80,
                       }}
                       className={isMine ? "bubble-right" : "bubble-left"}
                     >
-                      <Row gutter={8} wrap={false}>
-                        <Col>
-                          <Image
-                            src={item.producto?.img_url}
-                            alt={item.producto?.nombre}
-                            width={64}
-                            height={64}
-                            style={{ objectFit: "cover", borderRadius: 10 }}
-                            preview={false}
-                          />
-                        </Col>
-                        <Col flex="1">
-                          <Text strong style={{ display: "block", fontSize: 13 }}>
-                            {item.producto?.nombre}
-                          </Text>
-                          <Text style={{ fontSize: 11, color: "#aaa" }}>
-                            {item.producto?.descripcion}
-                          </Text>
-                          <div style={{ marginTop: 4 }}>
-                            <Tag
-                              style={{ fontSize: 10, padding: "0 6px" }}
-                              color={
-                                pedido.estado?.descripcion === "Pendiente" ? "default"
-                                : pedido.estado?.descripcion === "Entregado" ? "green"
-                                : pedido.estado?.descripcion === "En preparación" ? "gold"
-                                : "red"
-                              }
-                            >
-                              {pedido.estado?.descripcion}
-                              {pedido?.delivered_at && ` · ${formatDate(pedido.delivered_at, "HH:mm")}`}
-                            </Tag>
-                          </div>
-                        </Col>
-                      </Row>
-
-                      {/* Footer de la burbuja */}
-                      <div
+                      <div style={{ fontSize: 13, wordBreak: "break-word" }}>
+                        {msg.text}
+                      </div>
+                      <Text
                         style={{
                           position: "absolute",
-                          bottom: 6,
-                          left: 10,
-                          right: 10,
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
+                          bottom: 4,
+                          right: 8,
+                          fontSize: 10,
+                          color: "#aaa",
                         }}
                       >
-                        <Text style={{ fontSize: 11, color: "#aaa", fontWeight: "bold" }}>
-                          x{item.cantidad} · {formatCurrency(item.subtotal)}
-                        </Text>
-                        <Text style={{ fontSize: 10, color: "#aaa" }}>
-                          {formatDate(pedido.created_at, "HH:mm")}
-                        </Text>
-                      </div>
+                        {formatDate(msg.time, "HH:mm")}
+                      </Text>
                     </div>
                   </div>
                 );
-              }
+              })}
 
-              // type === "mensaje"
-              const { msg } = entry;
-              const showName = prevEntry?.msg?.sender?.dni !== msg.sender?.dni
-                || prevEntry?.type !== "mensaje";
+              <div ref={bottomRef} />
+            </Content>
 
-              return (
-                <div
-                  key={`msg-${index}`}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: isMine ? "flex-end" : "flex-start",
-                    marginTop: showName ? 12 : 2,
-                  }}
-                >
-                  {showName && !isMine && (
-                    <Text
-                      style={{
-                        fontSize: 11,
-                        color: msg.sender?.color || "#aaa",
-                        marginBottom: 2,
-                        marginLeft: 8,
-                      }}
-                    >
-                      {msg.sender?.nombre}
-                    </Text>
-                  )}
-
-                  <div
-                    style={{
-                      background: isMine ? "#005C4B" : "#2A3942",
-                      padding: "6px 10px 18px",
-                      borderRadius: 10,
-                      color: "#FFF",
-                      maxWidth: 320,
-                      position: "relative",
-                      minWidth: 80,
-                    }}
-                    className={isMine ? "bubble-right" : "bubble-left"}
-                  >
-                    <div style={{ fontSize: 13, wordBreak: "break-word" }}>
-                      {msg.text}
-                    </div>
-                    <Text
-                      style={{
-                        position: "absolute",
-                        bottom: 4,
-                        right: 8,
-                        fontSize: 10,
-                        color: "#aaa",
-                      }}
-                    >
-                      {formatDate(msg.time, "HH:mm")}
-                    </Text>
-                  </div>
-                </div>
-              );
-            })}
-
-            <div ref={bottomRef} />
-          </Content>
-
-          <Flex
-            justify="space-between"
-            align="center"
-            gap={16}
-            style={{
-              padding: 12,
-              background: "#202C33",
-            }}
-          >
-            <Button
-              type="primary"
-              shape="circle"
-              icon={<ShoppingCartOutlined />}
-              onClick={() => setOpenCarrito(true)}
-            />
-
-            <Chat
-              room={sesion?.id}
-              sender={{
-                dni: storedClient?.dni,
-                nombre: storedClient?.name,
-                color: storedClient?.color,
+            <Flex
+              justify="space-between"
+              align="center"
+              gap={16}
+              style={{
+                padding: 12,
+                background: "#202C33",
               }}
-            />
+            >
+              <Button
+                type="primary"
+                shape="circle"
+                icon={<ShoppingCartOutlined />}
+                onClick={() => setOpenCarrito(true)}
+              />
+
+              <Chat
+                room={sesion?.id}
+                sender={{
+                  dni: storedClient?.dni,
+                  nombre: storedClient?.name,
+                  color: storedClient?.color,
+                }}
+              />
+            </Flex>
+            
+            {openCarrito &&
+              <Carrito
+                dni={storedClient?.dni}
+                sesionID={sesion?.id}
+                onClose={() => {
+                  setOpenCarrito(false);
+                  fetchPedidos(sesion?.id);
+                }}
+              />
+            }
           </Flex>
-          
-          {openCarrito &&
-            <Carrito
-              dni={storedClient?.dni}
-              sesionID={sesion?.id}
-              onClose={() => {
-                setOpenCarrito(false);
-                fetchPedidos(sesion?.id);
-              }}
-            />
-          }
-        </Flex>
-      }
+        }
 
-      {openCrearSesion &&
-        <CrearSesion
-          title={descriptionCode}
-          onClose={onClose}
-        />
-      }
+        {openCrearSesion &&
+          <CrearSesion
+            title={descriptionCode}
+            onClose={onClose}
+          />
+        }
 
-      {openSolicitar &&
-        <SolicitarUnirse
-          title={descriptionCode}
-          onClose={onClose}
-        />
-      }
-    </Spin>
+        {openSolicitar &&
+          <SolicitarUnirse
+            title={descriptionCode}
+            onClose={onClose}
+          />
+        }
+      </Spin>
+    </ConfigProvider>
   );
 };
 
