@@ -1,6 +1,8 @@
 package models
 
 type ResponseMessage struct {
-	Status  string `json:"status"`
+	Ok      bool   `json:"ok,omitempty"`
+	Status  string `json:"status,omitempty"`
+	Code    string `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 }

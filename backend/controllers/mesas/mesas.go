@@ -46,7 +46,7 @@ func GetAll(c echo.Context) error {
 	var mesas []Mesas
 	db.Select(`
 		mesas.*,
-		COALESCE(sesiones.activo, FALSE) AS 'ocupada'
+		COALESCE(sesiones.activo, false) AS 'ocupada'
 	`).
 		Joins(`
 			LEFT JOIN sesiones

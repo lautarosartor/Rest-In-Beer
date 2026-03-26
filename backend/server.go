@@ -3,6 +3,7 @@ package main
 import (
 	"bar/config"
 	"bar/database"
+	"bar/redis"
 	routes "bar/routes"
 
 	"github.com/labstack/echo/v4"
@@ -22,6 +23,7 @@ func main() {
 
 	config.LoadEnvProps(".env")
 	database.InitDb(config.GetString("DB_STR"))
+	redis.InitRedis("localhost:6379")
 
 	// API routes
 	routes.InitRoutes(e)

@@ -18,14 +18,23 @@ type ResponseMessage struct {
 }
 
 type Data struct {
-	Usuario *models.Usuarios `json:"usuario,omitempty"`
-	Login   *LoginRequest    `json:"login,omitempty"`
-	Token   string           `json:"token,omitempty"`
+	Identify *IdentifyResponse `json:"identify,omitempty"`
+	Usuario  *models.Usuarios  `json:"usuario,omitempty"`
+	Login    *LoginRequest     `json:"login,omitempty"`
+	Token    string            `json:"token,omitempty"`
 }
 
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type IdentifyRequest struct {
+	DNI string `json:"dni"`
+}
+
+type IdentifyResponse struct {
+	models.CheckoutEstados
 }
 
 func Login(c echo.Context) error {
@@ -125,5 +134,18 @@ func Restricted(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*middleware.JwtCustomClaims)
 	name := claims.Name
-	return c.String(http.StatusOK, "Welcome "+name+"!")
+	return c.JSON(http.StatusOK, models.ResponseMessage{
+		Status:  "success",
+		Message: "Bienvenido " + name + "!",
+	})
+}
+
+func RestrictedClient(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*middleware.ClientClaims)
+	name := claims.Name
+	return c.JSON(http.StatusOK, models.ResponseMessage{
+		Status:  "success",
+		Message: "Bienvenido " + name + "!",
+	})
 }

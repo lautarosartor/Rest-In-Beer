@@ -34,8 +34,10 @@ func GetPaginated(c echo.Context) error {
 	db := database.GetDb()
 
 	db = db.Joins(`
-		INNER JOIN subcategorias ON productos.subcategoria_id = subcategorias.id
-		INNER JOIN categorias ON subcategorias.categoria_id = categorias.id
+		INNER JOIN subcategorias
+			ON productos.subcategoria_id = subcategorias.id
+		INNER JOIN categorias
+			ON subcategorias.categoria_id = categorias.id
 	`)
 
 	var totalDataSize int64 = 0
@@ -52,6 +54,38 @@ func GetPaginated(c echo.Context) error {
 		Find(&productos)
 
 	data := Data{Productos: productos, TotalDataSize: totalDataSize}
+	return c.JSON(http.StatusOK, ResponseMessage{
+		Status: "success",
+		Data:   data,
+	})
+}
+
+func Search(c echo.Context) error {
+	db := database.GetDb()
+	q := c.QueryParam("q")
+	var productos []Productos
+
+	db = db.Joins(`
+		INNER JOIN subcategorias
+			ON productos.subcategoria_id = subcategorias.id
+		INNER JOIN categorias
+			ON subcategorias.categoria_id = categorias.id
+	`)
+
+	if q != "" {
+		db = db.Where("productos.nombre LIKE ?", "%"+q+"%")
+	}
+
+	db.Select(`
+		productos.*,
+		subcategorias.nombre AS subcategoria,
+		categorias.id AS categoria_id,
+		categorias.nombre AS categoria
+	`).
+		Limit(10).
+		Find(&productos)
+
+	data := Data{Productos: productos}
 	return c.JSON(http.StatusOK, ResponseMessage{
 		Status: "success",
 		Data:   data,

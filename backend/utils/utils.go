@@ -3,6 +3,7 @@ package utils
 import (
 	"bar/database"
 	"bar/models"
+	"bar/routes/middleware"
 	"crypto/rand"
 	"errors"
 	"fmt"
@@ -130,6 +131,64 @@ func GetUserRole(c echo.Context, id bool) interface{} {
 	}
 
 	return rol.Nombre
+}
+
+// Obtener el ID del cliente activo
+func GetClientId(c echo.Context) uint {
+	var clienteID string // Variable para almacenar el ID del cliente
+
+	// Obtener el token de autorización del encabezado de la solicitud
+	reqToken := c.Request().Header.Get("Authorization")
+
+	// Dividir el token para obtener solo el token Bearer
+	splitToken := strings.Split(reqToken, "Bearer ")
+
+	// Asignar el token a la variable reqToken
+	reqToken = splitToken[1]
+
+	// Parsear el token sin verificarlo para obtener los claims
+	token, _, err := new(extract.Parser).ParseUnverified(reqToken, extract.MapClaims{})
+	if err != nil {
+		log.Printf("Error %s", err)
+	}
+
+	// Comprobar si se pueden obtener los claims del token
+	if claims, ok := token.Claims.(extract.MapClaims); ok {
+		// Obtener el ID del cliente desde los claims
+		subId := fmt.Sprint(claims["id"]) // Convertir el ID a string
+		clienteID = subId                 // Asignar el ID a la variable clienteID
+	}
+
+	// Obtener la conexión a la base de datos
+	db := database.GetDb()
+	cliente := new(models.Clientes) // Crear una nueva instancia de Cliente
+
+	// Buscar al cliente en la base de datos por ID
+	db.Select("id").Where("id = ?", clienteID).First(&cliente)
+
+	return cliente.ID // Retornar el ID del usuario encontrado
+}
+
+func GetClientClaims(c echo.Context) *middleware.ClientClaims {
+	reqToken := c.Request().Header.Get("Authorization")
+	splitToken := strings.Split(reqToken, "Bearer ")
+	reqToken = splitToken[1]
+
+	token, _, err := new(extract.Parser).ParseUnverified(reqToken, extract.MapClaims{})
+	if err != nil {
+		log.Printf("Error %s", err)
+		return nil
+	}
+
+	if claims, ok := token.Claims.(extract.MapClaims); ok {
+		return &middleware.ClientClaims{
+			ID:   uint(claims["id"].(float64)), // JWT guarda números como float64
+			Dni:  fmt.Sprint(claims["dni"]),
+			Name: fmt.Sprint(claims["name"]),
+		}
+	}
+
+	return nil
 }
 
 func GenerateRandomCode(length int) string {

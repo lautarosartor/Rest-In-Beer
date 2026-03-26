@@ -4,6 +4,7 @@ import (
 	"bar/constants"
 	"bar/database"
 	"bar/models"
+	"bar/utils"
 	"fmt"
 	"net/http"
 
@@ -26,7 +27,6 @@ type Data struct {
 type PedidoRequest struct {
 	models.Pedidos
 	Items []models.PedidosItems `json:"items" gorm:"-"`
-	Dni   string                `json:"dni"`
 }
 
 func GetAllPaginated(c echo.Context) error {
@@ -73,45 +73,32 @@ func Get(c echo.Context) error {
 
 func Create(c echo.Context) error {
 	db := database.GetDb()
+	clienteID := utils.GetClientId(c)
+
 	payload := new(PedidoRequest)
-
-	// Bindeamos el payload (recibimos el dni, idsesion, y los items[])
 	if err := c.Bind(&payload); err != nil {
-		return c.JSON(http.StatusBadRequest, ResponseMessage{
-			Status:  "error",
-			Message: "Invalid request body: " + err.Error(),
-		})
-	}
-
-	var clienteID uint
-	db.Select("id").Where("dni = ?", payload.Dni).Table("clientes").Scan(&clienteID)
-	if clienteID == 0 {
-		return c.JSON(http.StatusNotFound, ResponseMessage{
-			Status:  "error",
-			Message: "Cliente no encontrado.",
-		})
+		return utils.RespondWithError(c, http.StatusBadRequest, "invalid request body: "+err.Error())
 	}
 
 	// Verificamos que la sesion aún esté activa
 	sesion := new(models.Sesiones)
 	db.Where("activo = ?", 1).First(&sesion, payload.SesionID)
 	if sesion.ID == 0 {
-		return c.JSON(http.StatusNotFound, ResponseMessage{
-			Status:  "error",
-			Message: "Sesión no encontrada.",
-		})
+		return utils.RespondWithError(c, http.StatusNotFound, "Sesión no encontrada")
 	}
 
 	// Chequeamos que el cliente este vinculado a la sesion
 	var puedePedir bool
-	db.Raw("SELECT EXISTS (SELECT 1 FROM sesiones_clientes WHERE idsesion = ? AND idcliente = ?)",
-		payload.SesionID, clienteID).Scan(&puedePedir)
+	db.Raw(`
+		SELECT EXISTS (
+			SELECT 1 FROM sesiones_clientes
+			WHERE idsesion = ? AND idcliente = ?
+		)
+	`, payload.SesionID, clienteID).
+		Scan(&puedePedir)
 
 	if !puedePedir {
-		return c.JSON(http.StatusNotFound, ResponseMessage{
-			Status:  "error",
-			Message: "Cliente no autorizado en la mesa.",
-		})
+		return utils.RespondWithError(c, http.StatusUnauthorized, "Cliente no autorizado en la mesa")
 	}
 
 	newPedido := &models.Pedidos{
@@ -121,14 +108,19 @@ func Create(c echo.Context) error {
 	}
 
 	tx := db.Begin()
+	if err := tx.Error; err != nil {
+		return utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
 	// Creamos el pedido
 	if err := tx.Create(&newPedido).Error; err != nil {
 		tx.Rollback()
-		return c.JSON(http.StatusInternalServerError, ResponseMessage{
-			Status:  "error",
-			Message: "Error al realizar el pedido.",
-		})
+		return utils.RespondWithError(c, http.StatusBadRequest, "Error al realizar el pedido")
 	}
 
 	// Procesamos los items
@@ -139,10 +131,7 @@ func Create(c echo.Context) error {
 		producto := new(models.Productos)
 		if err := tx.First(&producto, item.ProductoID).Error; err != nil {
 			tx.Rollback()
-			return c.JSON(http.StatusNotFound, ResponseMessage{
-				Status:  "error",
-				Message: fmt.Sprintf("No se encontro el producto con ID %v.", item.ProductoID),
-			})
+			return utils.RespondWithError(c, http.StatusNotFound, fmt.Sprintf("No se encontro el producto con ID %v", item.ProductoID))
 		}
 
 		// Creamos un nuevo item en el pedido
@@ -158,22 +147,18 @@ func Create(c echo.Context) error {
 
 	if err := tx.Create(&newItems).Error; err != nil {
 		tx.Rollback()
-		return c.JSON(http.StatusInternalServerError, ResponseMessage{
-			Status:  "error",
-			Message: "Error al procesar los productos.",
-		})
+		return utils.RespondWithError(c, http.StatusInternalServerError, "Error al procesar los productos del pedido")
 	}
 
 	newPedido.Total = totalPedido
 	if err := tx.Updates(&newPedido).Error; err != nil {
 		tx.Rollback()
-		return c.JSON(http.StatusInternalServerError, ResponseMessage{
-			Status:  "error",
-			Message: "Error al guardar el total del pedido.",
-		})
+		return utils.RespondWithError(c, http.StatusInternalServerError, "Error al guardar el total del pedido")
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		return utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
+	}
 
 	return c.JSON(http.StatusOK, ResponseMessage{
 		Status:  "success",
@@ -185,7 +170,7 @@ func GetAllPublic(c echo.Context) error {
 	db := database.GetDb()
 	sesionID := c.Param("id")
 
-	db = db.Where("idsesion = ?", sesionID)
+	db = db.Where("sesion_id = ?", sesionID)
 
 	var totalDataSize int64
 	db.Table("pedidos").Count(&totalDataSize)

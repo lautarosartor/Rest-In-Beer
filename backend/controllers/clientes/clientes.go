@@ -3,6 +3,9 @@ package clientes
 import (
 	"bar/database"
 	"bar/models"
+	"bar/routes/middleware"
+	"bar/utils"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -17,6 +20,7 @@ type ResponseMessage struct {
 type Data struct {
 	Cliente       *models.Clientes  `json:"cliente,omitempty"`
 	Clientes      []models.Clientes `json:"clientes,omitempty"`
+	ClientToken   string            `json:"client_token,omitempty"`
 	TotalDataSize int64             `json:"totalDataSize,omitempty"`
 }
 
@@ -68,39 +72,56 @@ func Create(c echo.Context) error {
 
 	payload := new(models.Clientes)
 	if err := c.Bind(&payload); err != nil {
-		return c.JSON(http.StatusBadRequest, ResponseMessage{
-			Status:  "error",
-			Message: "invalid request body: " + err.Error(),
-		})
+		return utils.RespondWithError(c, http.StatusBadRequest, "invalid request body: "+err.Error())
 	}
 
-	var dniEncontrado string
-	db.Select("dni").Table("clientes").Where("dni = ?", payload.Dni).Scan(&dniEncontrado)
+	clienteEncontrado := new(models.Clientes)
+	db.Table("clientes").Where("dni = ?", payload.Dni).Scan(&clienteEncontrado)
 
 	tx := db.Begin()
-
-	if dniEncontrado != "" {
-		if err := tx.Where("dni = ?", dniEncontrado).Omit("Dni").Updates(&payload).Error; err != nil {
+	if err := tx.Error; err != nil {
+		return utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		if r := recover(); r != nil {
 			tx.Rollback()
-			return c.JSON(http.StatusInternalServerError, ResponseMessage{
-				Status:  "error",
-				Message: "Error al actualizar tus datos.",
-			})
+		}
+	}()
+
+	if clienteEncontrado.Dni != "" {
+		if err := tx.Where("id = ?", clienteEncontrado.ID).Omit("Dni").Updates(&payload).Error; err != nil {
+			tx.Rollback()
+			return utils.RespondWithError(c, http.StatusInternalServerError, "Error al actualizar tus datos.")
 		}
 	} else {
-		if err := tx.Create(&payload).Error; err != nil {
+		clienteEncontrado.Nombre = payload.Nombre
+		clienteEncontrado.Apellido = payload.Apellido
+		clienteEncontrado.Dni = payload.Dni
+		clienteEncontrado.Color = payload.Color
+		if err := tx.Create(&clienteEncontrado).Error; err != nil {
 			tx.Rollback()
-			return c.JSON(http.StatusInternalServerError, ResponseMessage{
-				Status:  "error",
-				Message: "Error al guardar tus datos.",
-			})
+			return utils.RespondWithError(c, http.StatusInternalServerError, "Error al guardar tus datos.")
 		}
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		return utils.RespondWithError(c, http.StatusInternalServerError, err.Error())
+	}
 
+	token, err := middleware.GenerarClientToken(
+		clienteEncontrado.ID,
+		clienteEncontrado.Nombre+" "+clienteEncontrado.Apellido,
+		clienteEncontrado.Dni,
+		payload.Color,
+	)
+	if err != nil {
+		return err
+	}
+
+	data := Data{ClientToken: token}
 	return c.JSON(http.StatusOK, ResponseMessage{
 		Status:  "success",
-		Message: "tus datos fueron guardados correctamente.",
+		Message: fmt.Sprintf("%s, tus datos fueron guardados correctamente.", clienteEncontrado.Nombre),
+		Data:    data,
 	})
 }

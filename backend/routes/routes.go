@@ -13,7 +13,9 @@ import (
 	sesionesController "bar/controllers/sesiones"
 	subcategoriasController "bar/controllers/subcategorias"
 	usuariosController "bar/controllers/usuarios"
+	"bar/models"
 	"bar/routes/middleware"
+	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -23,6 +25,7 @@ import (
 func InitRoutes(e *echo.Echo) {
 	a := e.Group("/api")    // privado con JWT
 	b := e.Group("/public") // publico
+	c := e.Group("/client") // JWT cliente mesa
 
 	// Configurar el middleware de JWT
 	config.LoadEnvProps(".env")
@@ -31,10 +34,36 @@ func InitRoutes(e *echo.Echo) {
 			return new(middleware.JwtCustomClaims) // claims personalizados
 		},
 		SigningKey: []byte(config.GetString("JWT_KEY")), // clave secreta para firmar y validar los token JWT
+		ErrorHandler: func(c echo.Context, err error) error {
+			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
+				Ok:      false,
+				Status:  "error",
+				Code:    "TOKEN_INVALID",
+				Message: "Tu sesión expiró",
+			})
+		},
 	}
 
 	// Aplicamos el middleware a las rutas privadas
 	a.Use(echojwt.WithConfig(cfg))
+
+	// Configurar el middleware de JWT para client
+	clientCfg := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(middleware.ClientClaims)
+		},
+		SigningKey: []byte(config.GetString("JWT_CLIENT_KEY")),
+		ErrorHandler: func(c echo.Context, err error) error {
+			return c.JSON(http.StatusUnauthorized, models.ResponseMessage{
+				Status:  "error",
+				Message: "Tu sesión expiró: " + err.Error(),
+				Code:    "CLIENT_TOKEN_INVALID",
+				Ok:      false,
+			})
+		},
+	}
+
+	c.Use(echojwt.WithConfig(clientCfg))
 
 	//======================================================================================================
 
@@ -52,9 +81,9 @@ func InitRoutes(e *echo.Echo) {
 
 	// sesions
 	a.GET("/sesiones", sesionesController.GetPaginated)
-	b.GET("/sesion", sesionesController.Get)
-	b.POST("/sesion", sesionesController.Create)
-	b.DELETE("/sesion/:id", sesionesController.Delete)
+	c.GET("/sesion", sesionesController.Get)
+	c.POST("/sesion", sesionesController.Create, middleware.Idempotency())
+	c.DELETE("/sesion/:id", sesionesController.Delete)
 
 	// states
 	a.GET("/estados", estadosController.GetAll)
@@ -67,7 +96,7 @@ func InitRoutes(e *echo.Echo) {
 	a.GET("/subcategoria/:id", subcategoriasController.Get)
 
 	// tables
-	a.GET("/mesas", mesasController.GetAll)
+	b.GET("/mesas", mesasController.GetAll)
 	a.GET("/mesa/:id", mesasController.Get)
 	a.POST("/mesa", mesasController.Create)
 	a.PUT("/mesa/:id", mesasController.Update)
@@ -75,23 +104,26 @@ func InitRoutes(e *echo.Echo) {
 	// promotions
 	a.GET("/promociones", promocionesController.GetAll)
 	a.GET("/promocion/:id", promocionesController.Get)
-	a.POST("/promocion", promocionesController.Create)
+	a.POST("/promocion", promocionesController.Create, middleware.Idempotency())
 	a.PUT("/promocion/:id", promocionesController.Update)
 
 	// customers
 	a.GET("/clientes", clientesController.GetAll)
 	a.GET("/cliente/:id", clientesController.Get)
-	b.POST("/cliente", clientesController.Create)
+	b.POST("/cliente", clientesController.Create, middleware.Idempotency())
 
 	// products
 	b.GET("/productos", productosController.GetPaginated)
 	b.GET("/producto/:id", productosController.Get)
-	a.POST("/producto", productosController.Create)
+	a.POST("/producto", productosController.Create, middleware.Idempotency())
 	a.PUT("/producto/:id", productosController.Update)
+	c.GET("/productos-search", productosController.Search)
 
 	// orders
 	a.GET("/pedidos", pedidosController.GetAllPaginated)
-	b.GET("/pedidos/:id", pedidosController.GetAllPublic)
+	c.GET("/pedidos/:id", pedidosController.GetAllPublic)
 	a.GET("/pedido/:id", pedidosController.Get)
-	b.POST("/pedido", pedidosController.Create)
+	c.POST("/pedido", pedidosController.Create, middleware.Idempotency())
+
+	c.GET("/hola", authController.RestrictedClient)
 }
